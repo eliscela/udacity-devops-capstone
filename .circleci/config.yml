@@ -4,7 +4,6 @@ jobs:
   lint-app:
     docker:
       - image: cimg/python:3.10.6
-    working_directory: ~/udacity-capstone
     steps:
       - checkout
       - restore_cache:
@@ -13,7 +12,7 @@ jobs:
       - run:
           name: Install dependencies and lint
           command: |
-            sudo curl -L "https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint && sudo chmod +x /usr/local/bin/hadolint
+            curl -L "https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64" -o bin/hadolint && sudo chmod +x bin/hadolint
             python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements.txt
             pylint app.py --disable=C0111,C0114,C0116
             flake8 app.py
@@ -26,9 +25,10 @@ jobs:
   upload-image:
     docker:
       - image: cimg/aws:2022.06
-    working_directory: ~/udacity-capstone
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.14
       - run:
           name: Build docker image
           command: |
