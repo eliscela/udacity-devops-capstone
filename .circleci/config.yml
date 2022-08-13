@@ -13,7 +13,7 @@ jobs:
       - run:
           name: install dependencies and lint
           command: |
-            curl -L "https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint && chmod +x /usr/local/bin/hadolint
+            sudo curl -L "https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint && sudo chmod +x /usr/local/bin/hadolint
             python3 -m venv ~/.venv-capstone && source ~/.venv-capstone/bin/activate && pip3 install -r requirements.txt
             pylint app.py --disable=C0111,C0114,C0116
             flake8 app.py
