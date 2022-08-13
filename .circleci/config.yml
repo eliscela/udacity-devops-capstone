@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   lint:
     docker:
-      - image: cimg/python
+      - image: cimg/python:3:10.4
     working_directory: ~/udacity-capstone
     steps:
       - checkout
