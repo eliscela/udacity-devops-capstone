@@ -1,4 +1,4 @@
-FROM cimg/python:3:10.4
+FROM cimg/python:3.10.6
 
 ## Step 1:
 # Create a working directory
