@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  lint:
+  lint-app:
     docker:
       - image: cimg/python:3.10.6
     working_directory: ~/udacity-capstone
@@ -11,19 +11,39 @@ jobs:
           keys:
             - dependencies
       - run:
-          name: install dependencies and lint
+          name: Install dependencies and lint
           command: |
             sudo curl -L "https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint && sudo chmod +x /usr/local/bin/hadolint
-            python3 -m venv ~/.venv-capstone && source ~/.venv-capstone/bin/activate && pip3 install -r requirements.txt
+            python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements.txt
             pylint app.py --disable=C0111,C0114,C0116
             flake8 app.py
             hadolint Dockerfile
       - save_cache:
           paths:
-            - ~/.venv-capstone
+            - .venv
           key: dependencies
+
+  upload-image:
+    docker:
+      - image: cimg/aws:latest
+    working_directory: ~/udacity-capstone
+    steps:
+      - checkout
+      - run:
+          name: Build docker image
+          command: |
+            docker build --tag=udacity-capstone .
+            docker image ls
+
+      - run:
+          name: Upload image to Dockerhub
+          command: |
+            docker login -u="$DOCKER_USER" -p="$DOCKER_TOKEN"
+            docker tag udacity-capstone $DOCKER_USER/udacity-capstone
+            docker push $DOCKER_USER/udacity-capstone
 
 workflows:
   default:
     jobs:
-      - lint
+      - lint-app
+      - upload-image
