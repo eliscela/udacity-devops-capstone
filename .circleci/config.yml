@@ -112,7 +112,7 @@ jobs:
       - run:
           name: Install Ansible
           command: |
-           sudo apt-get update && sudo apt-get install ansible -y
+           pip install ansible
       - run:
           name: Configure server via Ansible
           command: |
@@ -139,7 +139,7 @@ jobs:
       - run:
           name: Install Ansible
           command: |
-            sudo apt-get update && sudo apt-get install ansible -y
+            pip install ansible
       - run:
           name: Configure cluster via Ansible
           command: |

@@ -1,10 +1,9 @@
 ---
-- name: "Download and extract AWSCLI"
-  ansible.builtin.unarchive:
-    src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-    dest: $HOME
-    remote_src: yes
+- name: "Download AWS CLI"
+  shell: sudo rm -rf aws* && wget -O aws.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" && unzip aws.zip
+  become: yes
 
 - name: "Install the AWS CLI"
-  shell: sudo ./aws/install --update
+  shell: sudo aws/install --update
   become: yes
+  
