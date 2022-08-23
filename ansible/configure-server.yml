@@ -1,0 +1,43 @@
+---
+- name: "Install needed dependencies"
+  hosts: management
+  user: ubuntu
+  gather_facts: false
+  become: yes
+  pre_tasks:
+    - name: "Install 'unzip'"
+      become: yes
+      apt:
+        name: [ "unzip" ]
+        state: latest
+        update_cache: yes
+
+  roles:
+    - install-awscli
+    - install-kubectl
+
+- name: "Configure AWS credentials"
+  hosts: management
+  user: ubuntu
+  gather_facts: false
+  become: yes
+  vars:
+    AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+    AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+  tasks:
+    - name: Set the aws_access_key_id
+      shell: "aws configure set aws_access_key_id {{ AWS_ACCESS_KEY_ID }}"
+    - name: Set the aws_secret_access_key
+      shell: "aws configure set aws_secret_access_key {{ AWS_SECRET_ACCESS_KEY }}"
+    - name: Set the default.region
+      shell: "aws configure set default.region us-east-1"
+
+- name: "Fetch kubectl config"
+  hosts: management
+  user: ubuntu
+  gather_facts: false
+  become: yes
+  vars:
+  pre_tasks:
+    - name: Create a kubeconfig file for the cluster
+      shell: "aws eks update-kubeconfig --region us-east-1 --name cluster"

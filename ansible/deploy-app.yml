@@ -1,0 +1,15 @@
+- name: "Deploy latest app"
+  hosts: management[0]
+  user: ubuntu
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Update deployment to use the latest build of the docker image
+      shell: "kubectl set image deployments/deployment deployment=tahirsenpai/udacity-capstone"
+      args:
+        chdir: $HOME
+
+    - name: Check deployment status
+      shell: "kubectl rollout status deployments/deployment"
+      args:
+        chdir: $HOME

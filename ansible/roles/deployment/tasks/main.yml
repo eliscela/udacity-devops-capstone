@@ -1,0 +1,9 @@
+- name: Copy deployment config file
+  copy:
+    src: "deployment.yaml"
+    dest: $HOME
+
+- name: Apply kubernetes deployment
+  shell: "kubectl apply -f deployment.yaml"
+  args:
+    chdir: $HOME

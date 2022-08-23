@@ -1,0 +1,36 @@
+---
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: management-sg
+
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  managementHost1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      KeyName: "udacity"
+      ImageId: "ami-052efd3df9dad4825"
+      Tags:
+        - Key: Name
+          Value: management1
+
+  managementHost2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      KeyName: "udacity"
+      ImageId: "ami-052efd3df9dad4825"
+      Tags:
+        - Key: Name
+          Value: management2

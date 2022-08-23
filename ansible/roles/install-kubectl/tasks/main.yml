@@ -1,0 +1,11 @@
+---
+- name: "Download kubectl"
+  shell: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  args:
+    chdir: $HOME
+
+- name: "Install kubectl"
+  become: yes
+  shell: sudo cp kubectl /usr/local/bin/kubectl && sudo chmod +x /usr/local/bin/kubectl
+  args:
+    chdir: $HOME

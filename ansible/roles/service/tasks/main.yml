@@ -1,0 +1,9 @@
+- name: Copy service config file
+  copy:
+    src: "service.yaml"
+    dest: $HOME
+
+- name: Apply kubernetes service
+  command: "kubectl apply -f service.yaml"
+  args:
+    chdir: $HOME

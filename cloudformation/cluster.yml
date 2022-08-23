@@ -1,0 +1,53 @@
+---
+Resources:
+  ClusterInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: cluster-profile
+      Path: "/"
+      Roles:
+        - !Ref EKSClusterRole
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: cluster-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+
+  CapstoneProjectCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Version: "1.23"
+      Name: cluster
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue: SG
+        SubnetIds:
+          Fn::Split:
+            - ","
+            - Fn::ImportValue:
+                Fn::Sub: PUB-NET
+Outputs:
+  EksId:
+    Value: !Ref CapstoneProjectCluster
+    Export:
+      Name: EKSCluster
+
+  EKSRoleArn:
+    Value: !GetAtt EKSClusterRole.Arn
+    Export:
+      Name: EKSRole

@@ -1,0 +1,73 @@
+---
+Parameters:
+  MinSize:
+    Default: 2
+    Type: String
+
+  MaxSize:
+    Default: 4
+    Type: String
+
+  DesiredSize:
+    Default: 2
+    Type: Number
+
+  KeyPairName:
+    Default: udacity
+    Type: AWS::EC2::KeyPair::KeyName
+
+Mappings:
+  ServicePrincipals:
+    aws-cn:
+      ec2: ec2.amazonaws.com.cn
+    aws-us-gov:
+      ec2: ec2.amazonaws.com
+    aws:
+      ec2: ec2.amazonaws.com
+
+Resources:
+  NodeInstanceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: nodegroup-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - !FindInMap [ServicePrincipals, !Ref "AWS::Partition", ec2]
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+      Path: /
+
+
+  NodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: cluster
+      NodeRole: !GetAtt NodeInstanceRole.Arn
+      NodegroupName: nodegroup
+      ScalingConfig:
+        MinSize: !Ref MinSize
+        MaxSize: !Ref MaxSize
+        DesiredSize: !Ref DesiredSize
+      Subnets:
+        Fn::Split:
+          - ","
+          - Fn::ImportValue:
+              Fn::Sub: PUB-NET
+
+Outputs:
+  NodeInstanceRole:
+    Value: !GetAtt NodeInstanceRole.Arn
+    Export:
+      Name: IR
+  NodeGroup:
+    Value: !Ref NodeGroup
+    Export:
+      Name: NG

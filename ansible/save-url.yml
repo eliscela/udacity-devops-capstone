@@ -1,0 +1,17 @@
+---
+- name: "Save the ELB URL"
+  hosts: management[0]
+  user: ubuntu
+  gather_facts: false
+  tasks:
+    - name: Get the ELB DNS name
+      shell: "kubectl get svc service"
+      register: url
+      args:
+        chdir: $HOME
+
+    - name: Copy the output to a local file
+      copy:
+        content: "{{ url.stdout }}"
+        dest: "url.txt"
+      delegate_to: localhost

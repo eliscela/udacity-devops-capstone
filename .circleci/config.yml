@@ -38,9 +38,163 @@ jobs:
       - run:
           name: Upload image to Dockerhub
           command: |
-            docker login -u="$DOCKER_USER" -p="$DOCKER_TOKEN"
-            docker tag udacity-capstone $DOCKER_USER/udacity-capstone
-            docker push $DOCKER_USER/udacity-capstone
+            docker login -u=tahirsenpai -p="$DOCKER_TOKEN"
+            docker tag udacity-capstone tahirsenpai/udacity-capstone
+            docker push tahirsenpai/udacity-capstone
+
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: yum install -y tar gzip
+      - run:
+          name: Create/Update EKS network
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/network.yml \
+              --stack-name "network" \
+              --region us-east-1
+      - run:
+          name: Create/Update EKS Cluster
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/cluster.yml \
+              --stack-name "cluster" \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --region us-east-1
+      - run:
+          name: Create/Update Nodegroup
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/nodegroup.yml \
+              --stack-name "nodes" \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --region us-east-1
+      - run:
+          name: Create/Update management instances
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/management.yml \
+              --stack-name "management" \
+              --region us-east-1 \
+              --output text >> ~/verify_deployment.txt
+            cat ~/verify_deployment.txt
+      - run:
+          name: Get the IPs of the management instances for Ansible
+          command: |
+            echo [management] > ~/inventory.txt
+            aws ec2 describe-instances \
+              --region us-east-1 \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=management*" \
+              --output text >> ~/inventory.txt
+            cat ~/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - inventory.txt
+            - verify_deployment.txt
+
+  configure-infrastructure:
+    docker:
+      - image: cimg/python:3.10.6
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "17:30:1c:b4:01:31:c6:09:5a:0d:71:f8:97:e4:29:b2"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install Ansible
+          command: |
+           sudo apt-get update && sudo apt-get install ansible -y
+      - run:
+          name: Configure server via Ansible
+          command: |
+            if grep -q "No changes to deploy" ~/verify_deployment.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt configure-server.yml
+              fi
+              
+  configure-cluster:
+    docker:
+      - image: cimg/python:3.10.6
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "17:30:1c:b4:01:31:c6:09:5a:0d:71:f8:97:e4:29:b2"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install Ansible
+          command: |
+            sudo apt-get update && sudo apt-get install ansible -y
+      - run:
+          name: Configure cluster via Ansible
+          command: |
+            if grep -q "No changes to deploy" ~/verify_deployment.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt configure-cluster.yml
+              fi
+      - run:
+          name: Wait for LoadBalancer's domain to become reachable
+          command: |
+            if grep -q "No changes to deploy" ~/verify_deployment.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                echo "Wait 60 seconds..."
+                sleep 60
+              fi
+      - run:
+          name: Print out the ELB URL
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt save-url.yml
+            cat ~/url.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - url.txt
+
+  deploy-docker:
+    docker:
+      - image: cimg/python:3.10.6
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "17:30:1c:b4:01:31:c6:09:5a:0d:71:f8:97:e4:29:b2"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install Ansible
+          command: |
+            sudo apt-get update && sudo apt-get install ansible -y
+      - run:
+          name: Deploy the latest built docker image
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt deploy-app.yml
 
 workflows:
   default:
@@ -49,3 +203,20 @@ workflows:
       - upload-image:
           requires:
             - lint-app
+          filters:
+            branches:
+              only: [ master ]
+      - deploy-infrastructure:
+          filters:
+            branches:
+              only: [ master ]
+      - configure-infrastructure:
+          requires:
+            - deploy-infrastructure
+      - configure-cluster:
+          requires:
+            - configure-infrastructure
+            - upload-docker
+      - deploy-docker:
+          requires:
+            - configure-cluster
