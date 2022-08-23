@@ -4,7 +4,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: management-sg
-
+      GroupDescription: Allow SSH(22) for management
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22

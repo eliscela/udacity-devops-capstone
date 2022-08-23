@@ -143,6 +143,7 @@ Resources:
   ControlPlaneSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
+      GroupDescription: Allow Cluster to talk to nodes
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
