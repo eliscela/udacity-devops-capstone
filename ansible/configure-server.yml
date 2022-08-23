@@ -20,7 +20,6 @@
   hosts: management
   user: ubuntu
   gather_facts: false
-  become: yes
   vars:
     AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
     AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
@@ -36,7 +35,6 @@
   hosts: management
   user: ubuntu
   gather_facts: false
-  become: yes
   vars:
   pre_tasks:
     - name: Create a kubeconfig file for the cluster
