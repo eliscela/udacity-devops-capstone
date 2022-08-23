@@ -65,6 +65,7 @@ jobs:
               --stack-name "cluster" \
               --capabilities CAPABILITY_NAMED_IAM \
               --region us-east-1
+          no_output_timeout: 30m
       - run:
           name: Create/Update Nodegroup
           command: |
@@ -118,7 +119,7 @@ jobs:
             if grep -q "No changes to deploy" ~/verify_deployment.txt
               then
                 cat ~/inventory.txt
-                echo "Our management instances are already configured."
+                echo "Management instances were already configured."
               else
                 cat ~/inventory.txt
                 cd ansible
@@ -145,19 +146,19 @@ jobs:
             if grep -q "No changes to deploy" ~/verify_deployment.txt
               then
                 cat ~/inventory.txt
-                echo "Our management instances are already configured."
+                echo "Management instances were already configured."
               else
                 cat ~/inventory.txt
                 cd ansible
                 ansible-playbook -i ~/inventory.txt configure-cluster.yml
               fi
       - run:
-          name: Wait for LoadBalancer's domain to become reachable
+          name: Wait for ELB to become reachable
           command: |
             if grep -q "No changes to deploy" ~/verify_deployment.txt
               then
                 cat ~/inventory.txt
-                echo "Our management instances are already configured."
+                echo "Management instances were already configured."
               else
                 cat ~/inventory.txt
                 echo "Wait 60 seconds..."

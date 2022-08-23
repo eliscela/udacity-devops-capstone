@@ -12,6 +12,7 @@ def get_ip():
     else:
         client_ip = request.environ['HTTP_X_FORWARDED_FOR']
     return "Hello IP: " + client_ip + "<br> My IP is: " + server_ip
+print linterror:
 
 
 if __name__ == "__main__":
