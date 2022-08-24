@@ -21,12 +21,19 @@
   user: ubuntu
   gather_facts: false
   tasks:
-    copy:
-      src: "credentials"
-      dest: ~/.aws/credentials
-    copy:
-      src: "config"
-      dest: ~/.aws/config
+    - name: Ensure AWS directory exists
+      file:
+        path: ~/.aws
+        recurse: yes
+        state: directory
+    - name: Copy creds
+      copy:
+        src: credentials
+        dest: ~/.aws/credentials
+    - name: Copy config
+      copy:
+        src: config
+        dest: ~/.aws/config
 
 - name: "Fetch kubectl config"
   hosts: management
