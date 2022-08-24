@@ -3,7 +3,6 @@
   hosts: management[0]
   user: ubuntu
   gather_facts: false
-  become: yes
   roles:
     - deployment
     - service
