@@ -11,7 +11,7 @@ def get_ip():
         client_ip = request.environ['REMOTE_ADDR']
     else:
         client_ip = request.environ['HTTP_X_FORWARDED_FOR']
-    return "IP:" + client_ip + "<br>Udacity Version 2.0"
+    return "Hello IP: " + client_ip + "<br> My IP is: " + server_ip
 
 
 if __name__ == "__main__":
