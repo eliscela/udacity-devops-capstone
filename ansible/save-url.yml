@@ -13,5 +13,5 @@
     - name: Copy the output to a local file
       copy:
         content: "{{ url.stdout }}"
-        dest: "url.txt"
+        dest: "~/url.txt"
       delegate_to: localhost
