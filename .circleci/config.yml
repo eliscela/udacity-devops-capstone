@@ -39,8 +39,8 @@ jobs:
           name: Upload image to Dockerhub
           command: |
             docker login -u=tahirsenpai -p="$DOCKER_TOKEN"
-            docker tag udacity-capstone tahirsenpai/udacity-capstone
-            docker push tahirsenpai/udacity-capstone
+            docker tag udacity-capstone tahirsenpai/udacity-capstone:$CIRCLE_WORKFLOW_ID
+            docker push tahirsenpai/udacity-capstone:$CIRCLE_WORKFLOW_ID
 
   deploy-infrastructure:
     docker:

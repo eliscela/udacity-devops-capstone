@@ -2,9 +2,11 @@
   hosts: management[0]
   user: ubuntu
   gather_facts: false
+  vars:
+    CIRCLE_WORKFLOW_ID: "{{ lookup('env', 'CIRCLE_WORKFLOW_ID') }}"
   tasks:
     - name: Update deployment to use the latest build of the docker image
-      shell: "kubectl set image deployments/deployment deployment=tahirsenpai/udacity-capstone"
+      shell: "kubectl set image deployments/deployment deployment=tahirsenpai/udacity-capstone:{{ CIRCLE_WORKFLOW_ID }}"
 
     - name: Check deployment status
       shell: "kubectl rollout status deployments/deployment"
