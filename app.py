@@ -7,10 +7,6 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def get_ip():
-    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-        client_ip = request.environ['REMOTE_ADDR']
-    else:
-        client_ip = request.environ['HTTP_X_FORWARDED_FOR']
     return "Hello Udacity!<br>App Update 2.0"
 
 
